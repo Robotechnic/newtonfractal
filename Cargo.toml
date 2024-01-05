@@ -1,0 +1,12 @@
+[package]
+name = "newton_fractal"
+version = "0.1.0"
+edition = "2021"
+authors = ["Robotechnic"]
+
+
+[dependencies]
+egui = "0.24.1"
+macroquad = "0.4"
+num-complex = "0.4.4"
+
