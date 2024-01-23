@@ -42,10 +42,10 @@ impl Polynomial {
             Self::new(vec![Complex::new(0.0, 0.0)])
         } else {
             let mut coeff = Vec::new();
-			let len = self.coefficients.len();
-			coeff.reserve(len);
+            let len = self.coefficients.len();
+            coeff.reserve(len);
             for i in (1..len).rev() {
-                coeff.push(self.coefficients[len - 1 -i] * Complex::new(i as f32, 0.0));
+                coeff.push(self.coefficients[len - 1 - i] * Complex::new(i as f32, 0.0));
             }
             Self {
                 coefficients: coeff,
@@ -68,9 +68,9 @@ impl Polynomial {
         }
     }
 
-	pub fn get_coefficients(&self) -> &Vec<Complex<f32>> {
-		&self.coefficients
-	}
+    pub fn get_coefficients(&self) -> &Vec<Complex<f32>> {
+        &self.coefficients
+    }
 }
 
 impl From<(Vec<f32>, Vec<f32>)> for Polynomial {
@@ -120,14 +120,14 @@ impl Debug for Polynomial {
             .iter()
             .enumerate()
             .try_for_each(|(i, coeff)| {
-				if self.coefficients.len() - 1 - i == 0 {
-					write!(f, "{}", coeff)?
-				} else if coeff.re == 0.0 && coeff.im == 0.0 {
-					return Ok(()) as std::fmt::Result;
-				} else {
-					write!(f, "{} * x^{} + ", coeff, self.coefficients.len() - 1 - i)?
-				}
-				
+                if self.coefficients.len() - 1 - i == 0 {
+                    write!(f, "{}", coeff)?
+                } else if coeff.re == 0.0 && coeff.im == 0.0 {
+                    return Ok(()) as std::fmt::Result;
+                } else {
+                    write!(f, "{} * x^{} + ", coeff, self.coefficients.len() - 1 - i)?
+                }
+
                 Ok(()) as std::fmt::Result
             })
     }

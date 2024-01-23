@@ -12,25 +12,25 @@ async fn main() {
     let fractal = NewtonFractal::new(
         vec![
             vec2(1.0, 0.0),
-            vec2(-0.5, 0.86602540378), 
-            vec2(-0.5, -0.86602540378),
+            vec2(-0.5, 0.866_025_4),
+            vec2(-0.5, -0.866_025_4),
         ],
         vec![
             vec3(1.0, 0.0, 0.0),
             vec3(0.0, 1.0, 0.0),
             vec3(0.0, 0.0, 1.0),
         ],
-		10
+        10,
     );
 
-    if fractal.is_err() {
+    if fractal.is_none() {
         panic!("Error creating fractal");
     }
 
     let fractal = fractal.unwrap();
 
     loop {
-        gl_use_material(&fractal.get_material());
+        gl_use_material(fractal.get_material());
         draw_rectangle(-1.0, -1., screen_width(), screen_height(), WHITE);
         gl_use_default_material();
         next_frame().await

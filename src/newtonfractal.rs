@@ -64,18 +64,18 @@ impl NewtonFractal {
         material.unwrap()
     }
 
-    pub fn new(roots: Vec<Vec2>, colors: Vec<Vec3>, max_iterations: u32) -> Result<Self, ()> {
+    pub fn new(roots: Vec<Vec2>, colors: Vec<Vec3>, max_iterations: u32) -> Option<Self> {
         if roots.len() != colors.len() {
-            return Err(());
+            return None;
         }
         let polynomial = NewtonFractal::polynomial_from_roots(&roots);
         let derivative = polynomial.derivative();
         let material = NewtonFractal::create_material(roots.len());
         NewtonFractal::set_material_roots(&roots, &colors, &material);
-        NewtonFractal::set_material_derivative_coeff(&derivative.get_coefficients(), &material);
-		NewtonFractal::set_material_max_iter(max_iterations, &material);
+        NewtonFractal::set_material_derivative_coeff(derivative.get_coefficients(), &material);
+        NewtonFractal::set_material_max_iter(max_iterations, &material);
 
-        Ok(Self {
+        Some(Self {
             roots,
             colors,
             derivative,
@@ -96,12 +96,8 @@ impl NewtonFractal {
     }
 
     fn set_material_derivative_coeff(coefs: &[Complex<f32>], material: &Material) {
-        for i in 0..coefs.len() {
-			println!("dcoeff{}: {}", i, coefs[i]);
-            material.set_uniform(
-                format!("dcoeff{}", i).as_str(),
-                vec2(coefs[i].re, coefs[i].im),
-            );
+        for (i, coeff) in coefs.iter().enumerate() {
+            material.set_uniform(format!("dcoeff{}", i).as_str(), vec2(coeff.re, coeff.im));
         }
     }
 
@@ -117,16 +113,16 @@ impl NewtonFractal {
         self.colors = colors;
         let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
         self.derivative = polynomial.derivative();
-        NewtonFractal::set_material_roots(&self.roots, &self.colors, &mut self.material);
-		NewtonFractal::set_material_derivative_coeff(
-			&self.derivative.get_coefficients(),
-			&mut self.material,
-		);
+        NewtonFractal::set_material_roots(&self.roots, &self.colors, &self.material);
+        NewtonFractal::set_material_derivative_coeff(
+            self.derivative.get_coefficients(),
+            &self.material,
+        );
         true
     }
 
     pub fn set_max_iterations(&mut self, max_iterations: u32) {
         self.max_iterations = max_iterations;
-        NewtonFractal::set_material_max_iter(self.max_iterations, &mut self.material);
+        NewtonFractal::set_material_max_iter(self.max_iterations, &self.material);
     }
 }

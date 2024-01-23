@@ -34,18 +34,25 @@ fn polynomial_derivative() {
         Complex::new(3.0, 0.0),
     ]);
     let poly_derivative = poly.derivative();
-	println!("Poly: {:?}", poly);
-	println!("Poly Derivative: {:?}", poly_derivative);
+    println!("Poly: {:?}", poly);
+    println!("Poly Derivative: {:?}", poly_derivative);
     assert_eq!(
         poly_derivative,
         Polynomial::new(vec![Complex::new(2.0, 0.0), Complex::new(2.0, 0.0)])
     );
 
-	let poly = Polynomial::new(vec![Complex::new(1.0, 0.0), Complex::new(0.,0.), Complex::new(-1.0, 0.0)]);
-	let poly_derivative = poly.derivative();
-	println!("Poly: {:?}", poly);
-	println!("Poly Derivative: {:?}", poly_derivative);
-	assert_eq!(poly_derivative, Polynomial::new(vec![Complex::new(2.0, 0.0), Complex::new(0.0, 0.0)]));
+    let poly = Polynomial::new(vec![
+        Complex::new(1.0, 0.0),
+        Complex::new(0., 0.),
+        Complex::new(-1.0, 0.0),
+    ]);
+    let poly_derivative = poly.derivative();
+    println!("Poly: {:?}", poly);
+    println!("Poly Derivative: {:?}", poly_derivative);
+    assert_eq!(
+        poly_derivative,
+        Polynomial::new(vec![Complex::new(2.0, 0.0), Complex::new(0.0, 0.0)])
+    );
 }
 
 #[test]
