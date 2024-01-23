@@ -6,7 +6,7 @@ use std::{
 
 #[derive(Clone)]
 pub struct Polynomial {
-    coefficients: Vec<Complex<f64>>, // coefficients of the polynomial in the form a_n * x^n + ... + a_1 * x + a_0
+    coefficients: Vec<Complex<f32>>, // coefficients of the polynomial in the form a_n * x^n + ... + a_1 * x + a_0
 }
 
 impl Default for Polynomial {
@@ -18,7 +18,7 @@ impl Default for Polynomial {
 }
 
 impl Polynomial {
-    pub fn new(coeff: Vec<Complex<f64>>) -> Self {
+    pub fn new(coeff: Vec<Complex<f32>>) -> Self {
         if coeff.is_empty() {
             panic!("A polynomial must have at least one coefficient");
         }
@@ -27,7 +27,7 @@ impl Polynomial {
         }
     }
 
-    pub fn evaluate(&self, x: Complex<f64>) -> Complex<f64> {
+    pub fn evaluate(&self, x: Complex<f32>) -> Complex<f32> {
         let degree = self.degree();
         self.coefficients
             .iter()
@@ -42,8 +42,10 @@ impl Polynomial {
             Self::new(vec![Complex::new(0.0, 0.0)])
         } else {
             let mut coeff = Vec::new();
-            for i in 1..self.coefficients.len() {
-                coeff.push(self.coefficients[i] * Complex::new(i as f64, 0.0));
+			let len = self.coefficients.len();
+			coeff.reserve(len);
+            for i in (1..len).rev() {
+                coeff.push(self.coefficients[len - 1 -i] * Complex::new(i as f32, 0.0));
             }
             Self {
                 coefficients: coeff,
@@ -55,20 +57,24 @@ impl Polynomial {
         self.coefficients.len() - 1
     }
 
-    pub fn add_root(&mut self, root: Complex<f64>) {
+    pub fn add_root(&mut self, root: Complex<f32>) {
         let root_poly = Polynomial::new(vec![Complex::new(1.0, 0.0), -root]);
         *self *= root_poly;
     }
 
-    pub fn add_roots(&mut self, roots: &Vec<Complex<f64>>) {
+    pub fn add_roots(&mut self, roots: &Vec<Complex<f32>>) {
         for root in roots {
             self.add_root(*root);
         }
     }
+
+	pub fn get_coefficients(&self) -> &Vec<Complex<f32>> {
+		&self.coefficients
+	}
 }
 
-impl From<(Vec<f64>, Vec<f64>)> for Polynomial {
-    fn from((re_root, im_root): (Vec<f64>, Vec<f64>)) -> Self {
+impl From<(Vec<f32>, Vec<f32>)> for Polynomial {
+    fn from((re_root, im_root): (Vec<f32>, Vec<f32>)) -> Self {
         let mut roots = Vec::new();
         for i in 0..re_root.len() {
             roots.push(Complex::new(re_root[i], im_root[i]));
@@ -114,11 +120,14 @@ impl Debug for Polynomial {
             .iter()
             .enumerate()
             .try_for_each(|(i, coeff)| {
-                if i == 0 {
-                    write!(f, "{}", coeff)?
-                } else {
-                    write!(f, " + {} * x^{}", coeff, i)?
-                }
+				if self.coefficients.len() - 1 - i == 0 {
+					write!(f, "{}", coeff)?
+				} else if coeff.re == 0.0 && coeff.im == 0.0 {
+					return Ok(()) as std::fmt::Result;
+				} else {
+					write!(f, "{} * x^{} + ", coeff, self.coefficients.len() - 1 - i)?
+				}
+				
                 Ok(()) as std::fmt::Result
             })
     }

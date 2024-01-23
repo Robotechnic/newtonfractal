@@ -9,4 +9,3 @@ authors = ["Robotechnic"]
 egui = "0.24.1"
 macroquad = "0.4"
 num-complex = "0.4.4"
-
