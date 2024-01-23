@@ -7,6 +7,6 @@ out vec2 complex;
 
 
 void main() {
-	gl_Position = vec4(position.xy, 0, 1);
+	gl_Position = vec4(position.xyz, 1);
 	complex = position.xy;
 }

@@ -1,9 +1,8 @@
 use std::process::exit;
 
-use egui::vec2;
 use macroquad::{
     material::{load_material, Material, MaterialParams},
-    math::{Vec2, Vec3},
+    math::{vec2, Vec2, Vec3},
     miniquad::{ShaderError, ShaderSource, UniformType},
     Error,
 };
@@ -109,6 +108,9 @@ impl NewtonFractal {
         if roots.len() != colors.len() {
             return false;
         }
+		if self.roots.len() != roots.len() {
+			self.material = NewtonFractal::create_material(roots.len());
+		}
         self.roots = roots;
         self.colors = colors;
         let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
@@ -125,4 +127,8 @@ impl NewtonFractal {
         self.max_iterations = max_iterations;
         NewtonFractal::set_material_max_iter(self.max_iterations, &self.material);
     }
+
+	pub fn get_roots(&self) -> &[Vec2] {
+		&self.roots
+	}
 }

@@ -42,7 +42,7 @@ void closestRoot(in vec2 z, out vec4 color) {
 }
 
 vec2 evaluate_polynomial(in vec2 z) {
-	return cx_mul(cx_mul((root0 - z), (root1 - z)), (root2 - z));
+	return cx_mul(cx_mul((z - root0), (z - root1)), (z - root2));
 }
 
 vec2 evaluate_derivative(in vec2 z) {
@@ -51,7 +51,6 @@ vec2 evaluate_derivative(in vec2 z) {
 
 void newton(inout vec2 z) {
 	z = z - cx_div(evaluate_polynomial(z), evaluate_derivative(z));
-	// z = z - 1.0/3.0 * z + cx_div(vec2(1.0, 0.0), (3.0 * cx_mul(z, z)));
 }
 
 void iterate(inout vec2 z) {
