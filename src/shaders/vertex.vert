@@ -3,10 +3,16 @@
 precision highp float;
 
 attribute vec3 position;
+attribute vec2 texcoord;
 out vec2 complex;
 
+uniform mat4 Model;
+uniform mat4 Projection;
 
 void main() {
-	gl_Position = vec4(position.xyz, 1);
-	complex = position.xy;
+	complex = vec2(
+		texcoord.x * 2 - 1,
+		texcoord.y * 2 - 1
+	);
+	gl_Position = Projection * Model * vec4(position, 1);
 }

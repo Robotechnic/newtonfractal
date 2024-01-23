@@ -6,7 +6,7 @@ authors = ["Robotechnic"]
 
 
 [dependencies]
-egui = "0.24.1"
+egui = "0.21.0"
 egui-macroquad = "0.15.0"
-macroquad = "0.4"
+macroquad = "0.3.26"
 num-complex = "0.4.4"
