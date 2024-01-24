@@ -2,7 +2,7 @@ use macroquad::{
     color::{BLACK, WHITE},
     input::{is_mouse_button_down, mouse_position},
     material::{gl_use_default_material, gl_use_material},
-    math::{vec2, vec3},
+    math::vec2,
     shapes::{draw_circle, draw_rectangle},
     window::{next_frame, screen_height, screen_width},
 };
