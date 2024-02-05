@@ -1,3 +1,4 @@
+use macroquad::miniquad::debug;
 use newton_fractal::Polynomial;
 use num_complex::Complex;
 
@@ -5,7 +6,7 @@ use num_complex::Complex;
 fn polynomial_root() {
     let mut poly = Polynomial::default();
     poly.add_roots(&vec![Complex::new(1.0, 0.0), Complex::new(2.0, 0.0)]);
-    println!("{:?}", poly);
+    debug!("{:?}", poly);
     assert_eq!(
         poly.evaluate(Complex::new(1.0, 0.0)),
         Complex::new(0.0, 0.0)
@@ -34,8 +35,8 @@ fn polynomial_derivative() {
         Complex::new(3.0, 0.0),
     ]);
     let poly_derivative = poly.derivative();
-    println!("Poly: {:?}", poly);
-    println!("Poly Derivative: {:?}", poly_derivative);
+    debug!("Poly: {:?}", poly);
+    debug!("Poly Derivative: {:?}", poly_derivative);
     assert_eq!(
         poly_derivative,
         Polynomial::new(vec![Complex::new(2.0, 0.0), Complex::new(2.0, 0.0)])
@@ -47,8 +48,8 @@ fn polynomial_derivative() {
         Complex::new(-1.0, 0.0),
     ]);
     let poly_derivative = poly.derivative();
-    println!("Poly: {:?}", poly);
-    println!("Poly Derivative: {:?}", poly_derivative);
+    debug!("Poly: {:?}", poly);
+    debug!("Poly Derivative: {:?}", poly_derivative);
     assert_eq!(
         poly_derivative,
         Polynomial::new(vec![Complex::new(2.0, 0.0), Complex::new(0.0, 0.0)])

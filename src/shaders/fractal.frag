@@ -1,10 +1,11 @@
-#version 400
+#version 300 es
 
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
 #define cx_div(a, b) vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)))
 
 precision highp float;
 in vec2 complex;
+out vec4 fragColor;
 
 uniform int maxIterations;
 
@@ -62,5 +63,5 @@ void iterate(inout vec2 z) {
 void main() {
 	vec2 z = complex;
 	iterate(z);
-	closestRoot(z, gl_FragColor);
+	closestRoot(z, fragColor);
 }

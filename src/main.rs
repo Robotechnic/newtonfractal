@@ -1,13 +1,9 @@
 use egui::RichText;
 use macroquad::{
-    color::{BLACK, WHITE},
-    input::{is_key_down, is_mouse_button_down, mouse_position},
-    material::{gl_use_default_material, gl_use_material},
-    math::vec2,
-    shapes::{draw_circle, draw_rectangle},
-    window::{next_frame, screen_height, screen_width},
+    color::*, input::{is_key_down, is_mouse_button_down, mouse_position}, material::{gl_use_default_material, gl_use_material}, math::vec2, rand::rand, shapes::{draw_circle, draw_line, draw_rectangle}, text::draw_text, window::{clear_background, next_frame, screen_height, screen_width}
 };
-use newton_fractal::NewtonFractal;
+use newton_fractal::{NewtonFractal, Polynomial};
+use num_complex::Complex;
 
 const ROOT_RADIUS: f32 = 8.;
 
@@ -38,9 +34,29 @@ fn draw_roots(fractal: &mut NewtonFractal) {
 // ],
 // vec![[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
 
+// X^5 - 1
+// vec![
+// 	vec2(1.0, 0.0),
+// 	vec2(-0.80902, -0.58779),
+// 	vec2(0.30902, 0.95106),
+// 	vec2(0.30902, -0.95106),
+// 	vec2(-0.80902, 0.58779),
+// ],
+// vec![
+// 	[1.0, 0.0, 0.0],
+// 	[0.0, 1.0, 0.0],
+// 	[0.0, 0.0, 1.0],
+// 	[1.0, 1.0, 0.0],
+// 	[0.0, 1.0, 1.0],
+// ],
+
+
 #[macroquad::main("Newton Fractal")]
 async fn main() {
+
     let mut iter = 30;
+    let mut add_root = false;
+
     let fractal = NewtonFractal::new(
         vec![
             vec2(1.0, 0.0),
@@ -78,7 +94,30 @@ async fn main() {
         if is_mouse_button_down(macroquad::input::MouseButton::Left) {
             let real_range = fractal.get_real_range();
             let imag_range = fractal.get_imag_range();
-            if !drag_lock {
+            if add_root {
+                let x = map(
+                    mouse_position().0,
+                    0.0,
+                    screen_width(),
+                    real_range.x,
+                    real_range.y,
+                );
+                let y = map(
+                    mouse_position().1,
+                    0.0,
+                    screen_height(),
+                    imag_range.x,
+                    imag_range.y,
+                );
+                fractal.add_root(
+                    vec2(x, y),
+                    [
+                        (rand() / u32::MAX) as f32,
+                        (rand() / u32::MAX) as f32,
+                        (rand() / u32::MAX) as f32,
+                    ],
+                );
+            } else if !drag_lock {
                 for (i, root) in fractal.get_roots().iter().enumerate() {
                     let x = map(root.x, real_range.x, real_range.y, 0.0, screen_width());
                     let y = map(root.y, imag_range.x, imag_range.y, 0.0, screen_height());
@@ -92,8 +131,20 @@ async fn main() {
                 drag_lock = true;
             } else if drag_index != -1 {
                 let root = &mut fractal.get_roots()[drag_index as usize];
-                root.x = map(mouse_position().0, 0.0, screen_width(), real_range.x, real_range.y);
-                root.y = map(mouse_position().1, 0.0, screen_height(), imag_range.x, imag_range.y);
+                root.x = map(
+                    mouse_position().0,
+                    0.0,
+                    screen_width(),
+                    real_range.x,
+                    real_range.y,
+                );
+                root.y = map(
+                    mouse_position().1,
+                    0.0,
+                    screen_height(),
+                    imag_range.x,
+                    imag_range.y,
+                );
             }
         } else {
             drag_lock = false;
@@ -101,21 +152,25 @@ async fn main() {
         }
 
         if is_key_down(macroquad::miniquad::KeyCode::Left) {
+            // go left
             let real_range = fractal.get_real_range_mut();
             real_range.x -= 0.01;
             real_range.y -= 0.01;
         }
         if is_key_down(macroquad::miniquad::KeyCode::Right) {
+            // go right
             let real_range = fractal.get_real_range_mut();
             real_range.x += 0.01;
             real_range.y += 0.01;
         }
         if is_key_down(macroquad::miniquad::KeyCode::Down) {
+            // go down
             let imag_range = fractal.get_imag_range_mut();
             imag_range.x += 0.01;
             imag_range.y += 0.01;
         }
         if is_key_down(macroquad::miniquad::KeyCode::Up) {
+            // go up
             let imag_range = fractal.get_imag_range_mut();
             imag_range.x -= 0.01;
             imag_range.y -= 0.01;
@@ -142,17 +197,22 @@ async fn main() {
                     ui.add(egui::DragValue::new(&mut range.x).speed(0.01));
                     ui.add(egui::DragValue::new(&mut range.y).speed(0.01));
                 });
-                
+
                 ui.vertical_centered(|ui| {
                     ui.label(RichText::new("Roots").strong());
                 });
-                let root_and_colors = fractal.get_colored_roots();
-                for (i, (root, color)) in root_and_colors.enumerate() {
+                for i in 0..fractal.len() {
+                    if i >= fractal.len() {
+                        continue;
+                    }
                     ui.label(format!("Root {}", i + 1));
                     ui.horizontal(|ui| {
-                        ui.add(egui::DragValue::new(&mut root.x).speed(0.01));
-                        ui.add(egui::DragValue::new(&mut root.y).speed(0.01));
-                        ui.color_edit_button_rgb(color);
+                        ui.add(egui::DragValue::new(&mut fractal.get_roots()[i].x).speed(0.01));
+                        ui.add(egui::DragValue::new(&mut fractal.get_roots()[i].y).speed(0.01));
+                        ui.color_edit_button_rgb(&mut fractal.get_colors()[i]);
+                        if ui.button("Remove").clicked() {
+                            fractal.remove_root(i);
+                        }
                     });
                 }
             });

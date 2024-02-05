@@ -1,9 +1,8 @@
-use std::process::exit;
 
 use macroquad::{
     material::{load_material, Material, MaterialParams},
     math::{vec2, Vec2},
-    miniquad::{ShaderError, UniformType},
+    miniquad::{error, ShaderError, UniformType},
 };
 use num_complex::Complex;
 
@@ -11,14 +10,14 @@ use crate::Polynomial;
 
 const VERTEX: &str = include_str!("shaders/vertex.vert");
 
-const FRAGMENT_HEADER: &str = "
-#version 400
+const FRAGMENT_HEADER: &str = "#version 300 es
 
 #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
 #define cx_div(a, b) vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)))
 
 precision highp float;
 in vec2 complex;
+out vec4 fragColor;
 
 uniform int maxIterations;
 
@@ -45,7 +44,7 @@ void iterate(inout vec2 z) {
 void main() {
 	vec2 z = complex;
 	iterate(z);
-	closestRoot(z, gl_FragColor);
+	closestRoot(z, fragColor);
 }
 ";
 
@@ -134,7 +133,7 @@ impl NewtonFractal {
 			} else if i == len - 2 {
 				result.push_str(format!("cx_mul(dcoeff{}, z)", i).as_str());
 			} else {
-				result.push_str(format!("cx_mul(dcoeff{}, cx_pow(z, {}))", i, len - i - 1).as_str());
+				result.push_str(format!("cx_mul(dcoeff{}, cx_pow(z, {}.0))", i, len - i - 1).as_str());
 			}
 		}
 		result.push_str(";\n}\n");
@@ -152,7 +151,7 @@ impl NewtonFractal {
 		result
 	}
 
-    fn create_material(len: usize) -> Material {
+    fn create_material(len: usize) -> Option<Material> {
         let mut params = Vec::new();
         params.push(("maxIterations".to_owned(), UniformType::Int1));
 		params.push(("realRange".to_owned(), UniformType::Float2));
@@ -177,13 +176,13 @@ impl NewtonFractal {
                     shader_type,
                     error_message,
                 } => {
-                    println!("Error in {:?} shader:\n{}", shader_type, error_message);
+                    error!("Error in {:?} shader:\n{}", shader_type, error_message);
                 }
-                err => println!("{:?}", err),
+                err => error!("{:?}", err),
             }
-            exit(1);
+			return None
         }
-        material.unwrap()
+        Some(material.unwrap())
     }
 
     pub fn new(roots: Vec<Vec2>, colors: Vec<[f32; 3]>, max_iterations: u32, real_range: Vec2, imag_range: Vec2) -> Option<Self> {
@@ -193,6 +192,10 @@ impl NewtonFractal {
         let polynomial = NewtonFractal::polynomial_from_roots(&roots);
         let derivative = polynomial.derivative();
         let material = NewtonFractal::create_material(roots.len());
+		if material.is_none() {
+			return None;
+		}
+		let material = material.unwrap();
         NewtonFractal::set_material_roots(&roots, &colors, &material);
         NewtonFractal::set_material_derivative_coeff(derivative.get_coefficients(), &material);
         NewtonFractal::set_material_max_iter(max_iterations, &material);
@@ -239,7 +242,7 @@ impl NewtonFractal {
             return false;
         }
 		if self.roots.len() != roots.len() {
-			self.material = NewtonFractal::create_material(roots.len());
+			// self.material = NewtonFractal::create_material(roots.len());
 		}
         self.roots = roots;
         self.colors = colors;
@@ -248,6 +251,24 @@ impl NewtonFractal {
         self.update();
         true
     }
+
+	pub fn add_root(&mut self, root: Vec2, color: [f32; 3]) {
+		self.roots.push(root);
+		self.colors.push(color);
+		// self.material = NewtonFractal::create_material(self.roots.len());
+		let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
+		self.derivative = polynomial.derivative();
+		self.update();
+	}
+
+	pub fn remove_root(&mut self, index: usize) {
+		self.roots.remove(index);
+		self.colors.remove(index);
+		// self.material = NewtonFractal::create_material(self.roots.len());
+		let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
+		self.derivative = polynomial.derivative();
+		self.update();
+	}
 
     pub fn set_max_iterations(&mut self, max_iterations: u32) {
         self.max_iterations = max_iterations;
@@ -259,10 +280,6 @@ impl NewtonFractal {
 
 	pub fn get_colors(&mut self) -> &mut [[f32; 3]] {
 		&mut self.colors
-	}
-
-	pub fn get_colored_roots(&mut self) -> impl Iterator<Item = (&mut Vec2, &mut [f32; 3])> {
-		self.roots.iter_mut().zip(self.colors.iter_mut())
 	}
 
 	pub fn get_real_range(&self) -> Vec2 {
@@ -289,5 +306,9 @@ impl NewtonFractal {
 		);
 		NewtonFractal::set_material_max_iter(self.max_iterations, &self.material);
 		NewtonFractal::set_material_range(self.real_range, self.imag_range, &self.material);
+	}
+
+	pub fn len(&self) -> usize {
+		self.roots.len()
 	}
 }

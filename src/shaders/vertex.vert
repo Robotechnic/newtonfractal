@@ -1,9 +1,9 @@
-#version 400
+#version 300 es
 
 precision highp float;
 
-attribute vec3 position;
-attribute vec2 texcoord;
+in vec3 position;
+in vec2 texcoord;
 out vec2 complex;
 
 uniform mat4 Model;
