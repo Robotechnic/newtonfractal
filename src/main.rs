@@ -1,9 +1,14 @@
 use egui::RichText;
 use macroquad::{
-    color::*, input::{is_key_down, is_mouse_button_down, mouse_position}, material::{gl_use_default_material, gl_use_material}, math::vec2, rand::rand, shapes::{draw_circle, draw_line, draw_rectangle}, text::draw_text, window::{clear_background, next_frame, screen_height, screen_width}
+    color::*,
+    input::{is_key_down, is_mouse_button_down, mouse_position},
+    material::{gl_use_default_material, gl_use_material},
+    math::vec2,
+    rand::{self},
+    shapes::{draw_circle, draw_rectangle},
+    window::{next_frame, screen_height, screen_width},
 };
-use newton_fractal::{NewtonFractal, Polynomial};
-use num_complex::Complex;
+use newton_fractal::NewtonFractal;
 
 const ROOT_RADIUS: f32 = 8.;
 
@@ -50,28 +55,18 @@ fn draw_roots(fractal: &mut NewtonFractal) {
 // 	[0.0, 1.0, 1.0],
 // ],
 
-
 #[macroquad::main("Newton Fractal")]
 async fn main() {
-
     let mut iter = 30;
     let mut add_root = false;
 
     let fractal = NewtonFractal::new(
         vec![
             vec2(1.0, 0.0),
-            vec2(-0.80902, -0.58779),
-            vec2(0.30902, 0.95106),
-            vec2(0.30902, -0.95106),
-            vec2(-0.80902, 0.58779),
+            vec2(-0.5, 0.866_025_4),
+            vec2(-0.5, -0.866_025_4),
         ],
-        vec![
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-            [1.0, 1.0, 0.0],
-            [0.0, 1.0, 1.0],
-        ],
+        vec![[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
         iter,
         vec2(-1.0, 1.0),
         vec2(-1.0, 1.0),
@@ -86,15 +81,11 @@ async fn main() {
     let mut drag_index = -1;
 
     loop {
-        gl_use_material(*fractal.get_material());
-        draw_rectangle(0.0, 0., screen_width(), screen_height(), WHITE);
-        gl_use_default_material();
-
-        draw_roots(&mut fractal);
         if is_mouse_button_down(macroquad::input::MouseButton::Left) {
             let real_range = fractal.get_real_range();
             let imag_range = fractal.get_imag_range();
             if add_root {
+                add_root = false;
                 let x = map(
                     mouse_position().0,
                     0.0,
@@ -112,9 +103,9 @@ async fn main() {
                 fractal.add_root(
                     vec2(x, y),
                     [
-                        (rand() / u32::MAX) as f32,
-                        (rand() / u32::MAX) as f32,
-                        (rand() / u32::MAX) as f32,
+                        rand::gen_range(0., 255.),
+                        rand::gen_range(0., 255.),
+                        rand::gen_range(0., 255.),
                     ],
                 );
             } else if !drag_lock {
@@ -201,6 +192,9 @@ async fn main() {
                 ui.vertical_centered(|ui| {
                     ui.label(RichText::new("Roots").strong());
                 });
+                if ui.button("Add Root").clicked() {
+                    add_root = !add_root;
+                }
                 for i in 0..fractal.len() {
                     if i >= fractal.len() {
                         continue;
@@ -218,10 +212,16 @@ async fn main() {
             });
         });
 
-        egui_macroquad::draw();
-
-        fractal.set_max_iterations(iter);
+		fractal.set_max_iterations(iter);
         fractal.update();
+		
+		gl_use_material(*fractal.get_material());
+        draw_rectangle(0.0, 0., screen_width(), screen_height(), WHITE);
+        gl_use_default_material();
+
+        draw_roots(&mut fractal);
+        
+		egui_macroquad::draw();
 
         next_frame().await
     }
