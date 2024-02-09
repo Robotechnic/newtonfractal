@@ -212,16 +212,16 @@ async fn main() {
             });
         });
 
-		fractal.set_max_iterations(iter);
+        fractal.set_max_iterations(iter);
         fractal.update();
-		
-		gl_use_material(*fractal.get_material());
+
+        gl_use_material(*fractal.get_material());
         draw_rectangle(0.0, 0., screen_width(), screen_height(), WHITE);
         gl_use_default_material();
 
         draw_roots(&mut fractal);
-        
-		egui_macroquad::draw();
+
+        egui_macroquad::draw();
 
         next_frame().await
     }

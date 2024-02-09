@@ -105,13 +105,15 @@ impl NewtonFractal {
     pub fn get_imag_range_mut(&mut self) -> &mut Vec2 {
         &mut self.imag_range
     }
-	
+
     pub fn update(&mut self) {
-		let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
-		self.derivative = polynomial.derivative();
-		self.material.set_material_range(self.real_range, self.imag_range);
+        let polynomial = NewtonFractal::polynomial_from_roots(&self.roots);
+        self.derivative = polynomial.derivative();
+        self.material
+            .set_material_range(self.real_range, self.imag_range);
         self.material.set_material_roots(&self.roots, &self.colors);
-        self.material.set_material_derivative_coeff(self.derivative.get_coefficients());
+        self.material
+            .set_material_derivative_coeff(self.derivative.get_coefficients());
         self.material.set_material_max_iter(self.max_iterations);
     }
 
